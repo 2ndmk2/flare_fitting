@@ -254,7 +254,6 @@ def model_flare_4th(time, flux, flux_err, num_poly):
     numpyro.deterministic('mu', mu)
 
 
-
 def care_4th_mcmc(time, mcmc, mcmc_samples, para_names, rng_key_, file_head = "", num_poly=4):
     para_dic = make_dirs(para_names,mcmc_samples)
     arviz.plot_trace(mcmc, var_names=["t_rise","t_peak", "f_peak", "t_1_2_decay", 't_ratio', 't_1_2_decay_2', "fraction"])
@@ -275,18 +274,47 @@ def care_4th_mcmc(time, mcmc, mcmc_samples, para_names, rng_key_, file_head = ""
     return mean_muy, hpdi_muy, para_arr
 
 def make_para_dict_for_4th_order(para_dic_for_init, num_poly):
+
+    """ Make dict objecct for parameters
+
+    Args:
+        para_dic: dict object for paramerters
+        num_poly: order of polynomial (default =4)
+
+    Returns:
+        para_dic_updated: updated dict object for paramerters
     """
-    para_dic_for_init["a"] = 1#para_dic_for_init["t_rise"]
-    para_dic_for_init["b"] = 0
-    para_dic_for_init["c"] = 0
-    """
+
+    para_dic_updated = para_dic
     poly_value = np.zeros(num_poly-1)
     poly_value[0] = 1
-    para_dic_for_init["a"] = poly_value
-    para_dic_for_init["t_peak_duration"] = .2
-    return para_dic_for_init
+    para_dic_updated["a"] = poly_value
+    para_dic_updated["t_peak_duration"] = .2
+    return para_dic_updated
 
 def run_hmc_flare_4th(time, flux, flux_err, para_names,  num_warmup, num_samples, file_head, value_dic = None, dense_mass = True, num_poly = 4):
+    """
+        Run Hamiltonian Monte Carlo (HMC) based on JAX & numpyro for flare model with 4th polynomial in Aizawa+2022 
+
+    Args:
+        time: Array for time
+        flux: Array for flux
+        flux_err: Array for flux error (1 sigma)
+        para_names: parameter names for flare model
+        num_warmup: warmup steps for HMC
+        num_samples: samplint steps for HMC
+        file_head: output filename
+        value_dic: initial values for paramters (optional)
+        dense_mass: whether to use a dense mass matrix
+        num_poly: order of polynomial (default=4)
+
+    Returns:
+        mean_muy: mean models from mcmc posterior
+        hpdi_muy: 90% credible region for model from mcmc posterior
+        para_arr: dict object contains [-1sigma, median, 1sigma] values for parameters
+        mcmc_samples: samples for parameters
+
+    """
     rng_key = random.PRNGKey(0)
     rng_key, rng_key_ = random.split(rng_key)
     print(rng_key_)

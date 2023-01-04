@@ -164,6 +164,14 @@ def make_dirs(para_names, samples):
     return para_dic
 
 def make_dir_for_init(para_names, para_arr):
+    """ Make dict objecct for parameters
+
+    Args:
+        para_names: array for parameter names
+        para_arr: array for parameter values
+    Returns:
+        para_dic: dict object for paramerters
+    """
     
     para_dic = {}
     for (i, para_name) in enumerate(para_names):
@@ -180,6 +188,13 @@ def make_median_dirs(para_names, samples):
 
 
 def init_for_poly_const(dic_non_poly):
+
+
+    para_dic = {}
+    for para_name in para_names:
+        para_dic[para_name] = np.median(samples[para_name])
+    return para_dic
+
     dic_non_poly["a"] = dic_non_poly["f_peak"]/dic_non_poly["t_rise"]
     dic_non_poly["t_peak_duration"] = 3
     return dic_non_poly
@@ -268,6 +283,24 @@ def care_after_poly_const_mcmc(time, mcmc_samples, para_names, rng_key_, file_he
 
 
 def run_hmc_flare(time, flux, flux_err,para_names,  num_warmup, num_samples, file_head):
+    """
+        Run Hamiltonian Monte Carlo (HMC) based on JAX & numpyro for flare model in paper with linear model in rising phase
+
+    Args:
+        time: Array for time
+        flux: Array for flux
+        flux_err: Array for flux error (1 sigma)
+        para_names: parameter names for flare model
+        num_warmup: warmup steps for HMC
+        num_samples: samplint steps for HMC
+        file_head: output filename
+    Returns:
+        mean_muy: mean models from mcmc posterior
+        hpdi_muy: 90% credible region for model from mcmc posterior
+        para_arr: [-1sigma, median, 1sigma] values for parameters
+        mcmc_samples: samples for parameters
+
+    """
     rng_key = random.PRNGKey(0)
     rng_key, rng_key_ = random.split(rng_key)
     kernel = NUTS(model_flare_comp2_jax)
